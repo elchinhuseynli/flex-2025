@@ -1,0 +1,19 @@
+[fl-accordion-content] {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.5s ease-out;
+}
+
+[fl-accordion-content].active {
+  max-height: 1000px; /* Adjust this value as needed */
+  opacity: 1;
+}
+
+[fl-accordion-arrow] {
+  transition: transform 0.3s ease-in-out;
+}
+
+[fl-accordion-header][aria-expanded="true"] [fl-accordion-arrow] {
+  transform: rotate(45deg);
+}

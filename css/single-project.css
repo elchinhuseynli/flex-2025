@@ -1,0 +1,4 @@
+/* hide empty paragraphs */
+.single-work_extra-content-grid-text p:empty {
+  display: none;
+}

@@ -1,0 +1,305 @@
+/**
+ * Project Gallery Styles
+ * Responsive gallery for images and videos with Fancybox lightbox
+ * 
+ * @version 2.0.0
+ * @author Flex Digital Agency
+ */
+
+/* ==========================================================================
+   Gallery Layout
+   ========================================================================== */
+
+.project-gallery-section {
+  margin: 2rem 0;
+}
+
+.project-gallery-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.project-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(25vw, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Gallery Items
+   ========================================================================== */
+
+.project-gallery-item-wrapper {
+  aspect-ratio: 16/9;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.project-gallery-item {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.project-gallery-item:hover {
+  transform: scale(1.02);
+}
+
+.project-gallery-item:focus-visible {
+  outline: none !important;
+}
+
+/* ==========================================================================
+   Images and Videos
+   ========================================================================== */
+
+.project-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  border-radius: 8px;
+  transition: filter 0.3s ease;
+  pointer-events: none;
+  backface-visibility: hidden;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+  will-change: transform;
+  /* Prevent image blur during loading */
+  image-rendering: auto;
+  /* Ensure proper scaling */
+  max-width: none;
+  max-height: none;
+}
+
+/* Video specific styles */
+video.project-gallery-image {
+  will-change: auto;
+}
+
+.project-gallery-video:hover video.project-gallery-image {
+  filter: brightness(1.05);
+}
+
+/* Video fallback images */
+video.project-gallery-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   Overlay and Icons
+   ========================================================================== */
+
+.project-gallery-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.project-gallery-item:hover .project-gallery-overlay {
+  opacity: 1;
+}
+
+.project-gallery-zoom-icon {
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.project-gallery-item:hover .project-gallery-zoom-icon {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.project-gallery-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Fancybox Customizations
+   ========================================================================== */
+
+.fancybox__container {
+  --fancybox-bg: rgba(0, 0, 0, 0.95);
+}
+
+.fancybox__toolbar {
+  --f-toolbar-bg: rgba(0, 0, 0, 0.8);
+  --f-toolbar-color: #fff;
+}
+
+.fancybox__button {
+  --f-button-bg: rgba(255, 255, 255, 0.1);
+  --f-button-color: #fff;
+  --f-button-border-radius: 50%;
+  --f-button-svg-width: 20px;
+  --f-button-svg-height: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.fancybox__button:hover {
+  --f-button-bg: rgba(255, 255, 255, 0.2);
+}
+
+.fancybox__content video {
+  max-width: 100%;
+  max-height: 100vh;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   High-DPI Display Optimizations
+   ========================================================================== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .project-gallery-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* ==========================================================================
+   Image Loading States
+   ========================================================================== */
+
+.project-gallery-item {
+  position: relative;
+}
+
+.project-gallery-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, #1a0444 25%, #2b096b 50%, #1a0444 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.project-gallery-image {
+  position: relative;
+  z-index: 2;
+}
+
+.project-gallery-image[src] {
+  opacity: 1;
+}
+
+.project-gallery-image:not([src]) {
+  opacity: 0;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Hide loading state when image is loaded */
+.project-gallery-item.loaded::before {
+  opacity: 0;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  .project-gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .project-gallery-zoom-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .project-gallery-item:hover {
+    transform: scale(1.01);
+  }
+}
+
+@media (max-width: 480px) {
+  .project-gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .project-gallery-zoom-icon {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .project-gallery-item,
+  .project-gallery-overlay,
+  .project-gallery-zoom-icon {
+    transition: none;
+  }
+
+  .project-gallery-item:hover {
+    transform: none;
+  }
+}
