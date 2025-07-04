@@ -2,10 +2,15 @@
 // Lenis Initialization
 // ===========================
 const lenis = new Lenis({
-  duration: 3,
+  duration: 1.2,
   easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
   smooth: true,
+  smoothTouch: false,
+  touchMultiplier: 2,
 });
+
+// Make Lenis globally available
+window.lenis = lenis;
 
 // ===========================
 // RAF Setup for Lenis

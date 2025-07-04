@@ -1,298 +1,165 @@
-// /**
-//  * Active Link Detection for Webflow
-//  * Handles both URL-based and scroll-based active states for navigation links
-//  * Compatible with sticky navigation
-//  * @version 1.0.0
-//  * @author Your Team
-//  */
+// Professional Active Link Detection with Lenis Integration
+// Smooth scroll spy functionality with proper performance optimization
 
-// (function () {
-//   "use strict";
+class ActiveLinkDetector {
+  constructor() {
+    this.links = document.querySelectorAll('a[href^="#"], a[href^="/#"]');
+    this.sections = new Map();
+    this.activeSection = null;
+    this.observer = null;
+    this.lenis = window.lenis;
+    this.isScrolling = false;
 
-//   class ActiveLinkDetector {
-//     constructor(options = {}) {
-//       this.options = {
-//         activeClass: "w--current",
-//         offset: 100,
-//         throttleDelay: 16,
-//         ...options,
-//       };
+    this.init();
+  }
 
-//       this.links = [];
-//       this.sections = new Map();
-//       this.throttleTimer = null;
-//       this.isInitialized = false;
+  init() {
+    this.collectSections();
+    this.setupIntersectionObserver();
+    this.setupClickHandlers();
+    this.handleInitialState();
+  }
 
-//       this.init();
-//     }
+  collectSections() {
+    this.links.forEach((link) => {
+      const href = link.getAttribute("href");
+      const targetId = href.replace(/^\/?#/, "");
+      const target = document.getElementById(targetId);
 
-//     init() {
-//       if (this.isInitialized) return;
+      if (target) {
+        this.sections.set(target, {
+          link: link,
+          id: targetId,
+        });
+      }
+    });
+  }
 
-//       this.collectLinksAndSections();
-//       this.updateActiveLink();
-//       this.bindEvents();
-//       this.isInitialized = true;
-//     }
+  setupIntersectionObserver() {
+    const options = {
+      root: null,
+      rootMargin: "-50% 0px -50% 0px",
+      threshold: 0,
+    };
 
-//     collectLinksAndSections() {
-//       this.links = Array.from(document.querySelectorAll("a[href]"));
-//       this.sections.clear();
+    this.observer = new IntersectionObserver((entries) => {
+      // Don't update active state during programmatic scrolling
+      if (this.isScrolling) return;
 
-//       this.links.forEach((link) => {
-//         const href = link.getAttribute("href");
-//         if (href && href.startsWith("#") && href.length > 1) {
-//           const targetId = href.substring(1);
-//           const targetElement = document.getElementById(targetId);
-//           if (targetElement) {
-//             this.sections.set(href, {
-//               link: link,
-//               element: targetElement,
-//               id: targetId,
-//             });
-//           }
-//         }
-//       });
-//     }
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this.setActiveSection(entry.target);
+        }
+      });
+    }, options);
 
-//     updateActiveLink() {
-//       const currentPath =
-//         window.location.pathname +
-//         window.location.search +
-//         window.location.hash;
+    this.sections.forEach((sectionData, target) => {
+      this.observer.observe(target);
+    });
+  }
 
-//       // Remove all active classes
-//       this.links.forEach((link) => {
-//         link.classList.remove(this.options.activeClass);
-//       });
+  setupClickHandlers() {
+    this.links.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        const href = link.getAttribute("href");
+        const targetId = href.replace(/^\/?#/, "");
+        const target = document.getElementById(targetId);
 
-//       // Handle scroll spy for anchor sections
-//       const scrollActiveSection = this.getActiveSectionByScroll();
-//       if (scrollActiveSection) {
-//         scrollActiveSection.link.classList.add(this.options.activeClass);
+        if (target) {
+          e.preventDefault();
+          this.scrollToSection(target, href);
+        }
+      });
+    });
+  }
 
-//         // If hash matches, we're done
-//         if (
-//           window.location.hash &&
-//           window.location.hash === scrollActiveSection.link.getAttribute("href")
-//         ) {
-//           return;
-//         }
-//       }
+  scrollToSection(target, href) {
+    // Set scrolling flag to prevent observer interference
+    this.isScrolling = true;
 
-//       // Handle regular URL matching
-//       this.links.forEach((link) => {
-//         const href = link.getAttribute("href");
+    // Temporarily disconnect observer
+    this.observer.disconnect();
 
-//         if (
-//           this.isExternalLink(href) ||
-//           link.classList.contains(this.options.activeClass)
-//         ) {
-//           return;
-//         }
+    // Get the exact position of the target element
+    const rect = target.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const targetTop = rect.top + scrollTop;
+    const viewportHeight = window.innerHeight;
 
-//         if (this.isLinkActive(href, currentPath)) {
-//           link.classList.add(this.options.activeClass);
-//         }
-//       });
-//     }
+    // Calculate position so that target's top is at 50% of viewport height
+    const targetPosition = targetTop - viewportHeight * 0.5;
 
-//     isExternalLink(href) {
-//       return (
-//         href && (href.startsWith("http://") || href.startsWith("https://"))
-//       );
-//     }
+    // Update URL hash
+    window.location.hash = href;
 
-//     isLinkActive(href, currentPath) {
-//       if (!href) return false;
+    // Set the active section immediately
+    this.setActiveSection(target);
 
-//       // Handle hash links
-//       if (href.startsWith("#")) {
-//         return window.location.hash === href;
-//       }
+    // Use Lenis for smooth scrolling
+    if (this.lenis) {
+      this.lenis.scrollTo(targetPosition, {
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+    } else {
+      // Fallback to native smooth scrolling
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
 
-//       const currentPathNoHash =
-//         window.location.pathname + window.location.search;
-//       const currentPathWithHash = currentPathNoHash + window.location.hash;
+    // Re-enable observer after scroll completes
+    setTimeout(() => {
+      this.isScrolling = false;
+      this.sections.forEach((sectionData, sectionTarget) => {
+        this.observer.observe(sectionTarget);
+      });
+    }, 1500); // Wait for scroll animation to complete
+  }
 
-//       // Exact matches
-//       if (
-//         href === currentPath ||
-//         href === currentPathWithHash ||
-//         href === currentPathNoHash
-//       ) {
-//         return true;
-//       }
+  setActiveSection(target) {
+    // Remove active class from all links
+    this.links.forEach((link) => {
+      link.classList.remove("w--current");
+    });
 
-//       // Root path
-//       if (href === "/" && window.location.pathname === "/") {
-//         return true;
-//       }
+    // Add active class to the corresponding link
+    const sectionData = this.sections.get(target);
+    if (sectionData) {
+      sectionData.link.classList.add("w--current");
+      this.activeSection = target;
+    }
+  }
 
-//       // Relative paths
-//       if (href === window.location.pathname) {
-//         return true;
-//       }
+  handleInitialState() {
+    if (window.location.hash) {
+      const targetId = window.location.hash.substring(1);
+      const target = document.getElementById(targetId);
+      if (target && this.sections.has(target)) {
+        // Set initial active state
+        this.setActiveSection(target);
+      }
+    }
+  }
 
-//       return false;
-//     }
+  destroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+}
 
-//     getActiveSectionByScroll() {
-//       if (this.sections.size === 0) return null;
+// Initialize when DOM is ready
+function initActiveLinks() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      new ActiveLinkDetector();
+    });
+  } else {
+    new ActiveLinkDetector();
+  }
+}
 
-//       const scrollTop =
-//         window.pageYOffset || document.documentElement.scrollTop;
-//       const windowHeight = window.innerHeight;
-
-//       let activeSection = null;
-//       let bestScore = -1;
-
-//       this.sections.forEach((section) => {
-//         const element = section.element;
-//         const rect = element.getBoundingClientRect();
-//         const elementTop = rect.top + scrollTop;
-//         const elementBottom = elementTop + rect.height;
-
-//         // Calculate visibility
-//         const visibleTop = Math.max(elementTop, scrollTop);
-//         const visibleBottom = Math.min(elementBottom, scrollTop + windowHeight);
-//         const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-//         const visibilityRatio = visibleHeight / rect.height;
-
-//         // Distance from offset point
-//         const distanceFromOffset = Math.abs(
-//           elementTop - (scrollTop + this.options.offset)
-//         );
-
-//         // Calculate score
-//         let score = 0;
-
-//         if (visibilityRatio > 0.3) {
-//           score = visibilityRatio * 100;
-//         }
-
-//         if (
-//           elementTop <= scrollTop + this.options.offset &&
-//           elementBottom >= scrollTop + this.options.offset
-//         ) {
-//           score += 50;
-//         }
-
-//         score -= distanceFromOffset / 10;
-
-//         if (score > bestScore) {
-//           bestScore = score;
-//           activeSection = section;
-//         }
-//       });
-
-//       return activeSection;
-//     }
-
-//     handleScroll() {
-//       if (!this.throttleTimer) {
-//         this.throttleTimer = setTimeout(() => {
-//           this.updateActiveLink();
-//           this.throttleTimer = null;
-//         }, this.options.throttleDelay);
-//       }
-//     }
-
-//     bindEvents() {
-//       // URL change events
-//       window.addEventListener("hashchange", () => this.updateActiveLink());
-//       window.addEventListener("popstate", () => this.updateActiveLink());
-
-//       // Scroll events
-//       window.addEventListener("scroll", () => this.handleScroll(), {
-//         passive: true,
-//       });
-
-//       // Anchor link clicks
-//       this.links.forEach((link) => {
-//         const href = link.getAttribute("href");
-//         if (href && href.startsWith("#")) {
-//           link.addEventListener("click", () => {
-//             setTimeout(() => this.updateActiveLink(), 10);
-//           });
-//         }
-//       });
-
-//       // Dynamic content observer
-//       const observer = new MutationObserver((mutations) => {
-//         let shouldUpdate = false;
-//         mutations.forEach((mutation) => {
-//           if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-//             for (let node of mutation.addedNodes) {
-//               if (
-//                 node.nodeType === 1 &&
-//                 (node.tagName === "A" || node.querySelector("a"))
-//               ) {
-//                 shouldUpdate = true;
-//                 break;
-//               }
-//             }
-//           }
-//         });
-
-//         if (shouldUpdate) {
-//           this.refresh();
-//         }
-//       });
-
-//       observer.observe(document.body, {
-//         childList: true,
-//         subtree: true,
-//       });
-//     }
-
-//     refresh() {
-//       this.collectLinksAndSections();
-//       this.updateActiveLink();
-//     }
-
-//     destroy() {
-//       if (this.throttleTimer) {
-//         clearTimeout(this.throttleTimer);
-//         this.throttleTimer = null;
-//       }
-//       this.isInitialized = false;
-//     }
-//   }
-
-//   // Initialize when DOM is ready
-//   function initActiveLinks() {
-//     // Prevent multiple initializations
-//     if (window.activeLinkDetector) {
-//       return;
-//     }
-
-//     try {
-//       const detector = new ActiveLinkDetector({
-//         activeClass: "w--current",
-//         offset: 100, // Adjust based on your sticky nav height
-//         throttleDelay: 16,
-//       });
-
-//       // Store globally for potential manual control
-//       window.activeLinkDetector = detector;
-//     } catch (error) {
-//       console.error("ActiveLinkDetector initialization failed:", error);
-//     }
-//   }
-
-//   // Auto-initialize based on document state
-//   if (document.readyState === "loading") {
-//     document.addEventListener("DOMContentLoaded", initActiveLinks);
-//   } else {
-//     // DOM already loaded, initialize with small delay for safety
-//     setTimeout(initActiveLinks, 50);
-//   }
-
-//   // Expose refresh method for manual control if needed
-//   window.refreshActiveLinks = function () {
-//     if (window.activeLinkDetector) {
-//       window.activeLinkDetector.refresh();
-//     }
-//   };
-// })();
+// Initialize
+initActiveLinks();

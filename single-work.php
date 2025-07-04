@@ -425,16 +425,16 @@ text-decoration: inherit;
 						<div class="container-medium">
 							<div class="single-project_text-grid">
 								<div class="single-project_text-grid-col is-span-2">
-									<h2>Představení projektu</h2>
-									<p><?php echo get_field('project_introduction') ?></p>
+									<h2 data-blur-scroll>Představení projektu</h2>
+									<div data-blur-scroll><?php echo get_field('project_introduction') ?></div>
 								</div>
 								<div class="single-project_text-grid-col">
-									<h3>O klientovi</h3>
-									<p><?php echo get_field('about_a_client') ?></p>
+									<h3 data-blur-scroll>O klientovi</h3>
+									<div data-blur-scroll><?php echo get_field('about_a_client') ?></div>
 								</div>
 								<div class="single-project_text-grid-col">
-									<h3>Náš cíl</h3>
-									<p><?php echo get_field('about_a_client') ?></p>
+									<h3 data-blur-scroll>Náš cíl</h3>
+									<div data-blur-scroll><?php echo get_field('about_a_client') ?></div>
 								</div>
 							</div>
 						</div>
@@ -443,21 +443,21 @@ text-decoration: inherit;
 				<section nav-color="is-light" class="section is-dark-theme">
 					<div class="padding-global padding-section-large">
 						<div class="container-medium">
-							<?php include("template-parts/project-gallery.php"); ?>
+							<div class="single-work_extra-content-grid">
+								<?php if( have_rows('extra_content') ){ ?><div class="single-work_extra-content-grid-aside"><?php global $parent_id; if(isset($loop_id)) $parent_id = $loop_id; $loop_index = 0; $loop_title="Extra Content"; $loop_field = "extra_content"; while( have_rows('extra_content') ){ global $loop_id; $loop_index++; $loop_id++; the_row(); ?><a href="#<?php echo sanitize_title(get_sub_field('title')) ?>" class="single-work_aside-mini-title-link"><?php echo get_sub_field('title') ?></a><?php } ?></div><?php } ?>
+								<?php if( have_rows('extra_content') ){ ?><div class="single-work_extra-content-grid-column"><?php global $parent_id; if(isset($loop_id)) $parent_id = $loop_id; $loop_index = 0; $loop_title="Extra Content"; $loop_field = "extra_content"; while( have_rows('extra_content') ){ global $loop_id; $loop_index++; $loop_id++; the_row(); ?>
+									<div id="<?php echo sanitize_title(get_sub_field('title')) ?>" class="single-work_extra-content-grid-col-block">
+										<h3 data-blur-scroll><?php echo get_sub_field('title') ?></h3>
+										<div data-blur-scroll class="single-work_extra-content-grid-text"><?php echo get_sub_field('text') ?></div><?php if(!empty(get_sub_field('image'))) { ?><a href="#" class="project-gallery-item-wrapper w-inline-block"><div class="project-gallery-item"><img class="single-work_image" src="<?php $field = get_sub_field('image'); if(isset($field['url'])){ echo($field['url']); }elseif(is_numeric($field)){ echo(wp_get_attachment_image_url($field, 'full')); }else{ echo($field); } ?>" data-fancybox="inline-gallery" alt="<?php echo !empty($field['alt']) ? esc_attr($field['alt']) : ''; ?>" loading="eager"></div></a><?php } ?></div>
+								<?php } ?></div><?php } ?>
+							</div>
 						</div>
 					</div>
 				</section>
 				<section nav-color="is-dark" class="section">
 					<div class="padding-global padding-section-large">
 						<div class="container-medium">
-							<div class="single-work_extra-content-grid">
-								<?php if( have_rows('extra_content') ){ ?><div class="single-work_extra-content-grid-aside"><?php global $parent_id; if(isset($loop_id)) $parent_id = $loop_id; $loop_index = 0; $loop_title="Extra Content"; $loop_field = "extra_content"; while( have_rows('extra_content') ){ global $loop_id; $loop_index++; $loop_id++; the_row(); ?><a href="#<?php echo sanitize_title(get_sub_field('title')) ?>" class="single-work_aside-mini-title-link"><?php echo get_sub_field('title') ?></a><?php } ?></div><?php } ?>
-								<?php if( have_rows('extra_content') ){ ?><div class="single-work_extra-content-grid-column"><?php global $parent_id; if(isset($loop_id)) $parent_id = $loop_id; $loop_index = 0; $loop_title="Extra Content"; $loop_field = "extra_content"; while( have_rows('extra_content') ){ global $loop_id; $loop_index++; $loop_id++; the_row(); ?>
-									<div id="<?php echo sanitize_title(get_sub_field('title')) ?>" class="single-work_extra-content-grid-col-block">
-										<h3><?php echo get_sub_field('title') ?></h3>
-										<div class="single-work_extra-content-grid-text"><?php echo get_sub_field('text') ?></div><?php if(!empty(get_sub_field('image'))) { ?><a href="#" class="single-work_image-wrapper w-inline-block"><img class="single-work_image" src="<?php $field = get_sub_field('image'); if(isset($field['url'])){ echo($field['url']); }elseif(is_numeric($field)){ echo(wp_get_attachment_image_url($field, 'full')); }else{ echo($field); } ?>" data-fancybox="inline-gallery" alt="<?php echo !empty($field['alt']) ? esc_attr($field['alt']) : ''; ?>" loading="lazy"></a><?php } ?></div>
-								<?php } ?></div><?php } ?>
-							</div>
+							<?php include("template-parts/project-gallery.php"); ?>
 						</div>
 					</div>
 				</section>

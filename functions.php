@@ -2,7 +2,7 @@
 
 defined('ABSPATH') || exit;
 
-$theme_version = '1751575550';
+$theme_version = '1751624533';
 
 load_theme_textdomain('wtw-translate', get_template_directory() . '/languages');
 
